@@ -2,6 +2,7 @@ const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const PDFDocument = require('pdfkit');
 
 const app = express();
 const PORT = 5000;
@@ -73,6 +74,36 @@ app.post('/api/dose', (req, res) => {
 app.get('/api/history', (req, res) => {
   console.log("📤 Wysłano historię:", dosingHistory.length, "rekordów");
   res.json(dosingHistory);
+});
+
+// 📄 Eksport do PDF z obsługą polskich znaków
+app.get('/api/export', (req, res) => {
+  const doc = new PDFDocument();
+
+  const fontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
+  doc.registerFont('DejaVu', fontPath);
+  doc.font('DejaVu');
+
+  const filename = `dosing-history-${Date.now()}.pdf`;
+  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+  res.setHeader('Content-Type', 'application/pdf');
+
+  doc.pipe(res);
+
+  doc.fontSize(18).text('Historia dawkowania', { underline: true });
+  doc.moveDown();
+
+  dosingHistory.forEach((entry, index) => {
+    doc
+      .fontSize(12)
+      .text(`${index + 1}. ${entry.timestamp}`)
+      .text(`   Lek: ${entry.medicine}`)
+      .text(`   Wiek: ${entry.age}, Waga: ${entry.weight}kg, Płeć: ${entry.gender}`)
+      .text(`   Dawka: ${entry.dose} mg`)
+      .moveDown();
+  });
+
+  doc.end();
 });
 
 app.listen(PORT, () => {
