@@ -1,0 +1,50 @@
+[
+  {
+    "timestamp": "2025-06-11T19:02:59.516Z",
+    "age": 23,
+    "weight": 67,
+    "gender": "female",
+    "medicine": "Paracetamol",
+    "dose": "670.00"
+  },
+  {
+    "timestamp": "2025-06-11T19:03:01.851Z",
+    "age": 23,
+    "weight": 67,
+    "gender": "female",
+    "medicine": "Ibuprofen",
+    "dose": "469.00"
+  },
+  {
+    "timestamp": "2025-06-11T19:03:03.956Z",
+    "age": 23,
+    "weight": 67,
+    "gender": "female",
+    "medicine": "Amoksycylina",
+    "dose": "402.00"
+  },
+  {
+    "timestamp": "2025-06-11T19:03:15.045Z",
+    "age": 55,
+    "weight": 89,
+    "gender": "male",
+    "medicine": "Paracetamol",
+    "dose": "890.00"
+  },
+  {
+    "timestamp": "2025-06-11T19:03:17.027Z",
+    "age": 55,
+    "weight": 89,
+    "gender": "male",
+    "medicine": "Ibuprofen",
+    "dose": "623.00"
+  },
+  {
+    "timestamp": "2025-06-11T19:03:19.339Z",
+    "age": 55,
+    "weight": 89,
+    "gender": "male",
+    "medicine": "Amoksycylina",
+    "dose": "712.00"
+  }
+]
