@@ -1,32 +1,47 @@
-import { useState } from "react";
-import DosingForm from "./components/DosingForm";
-import History from "./components/History";
+import React, { useState } from 'react';
+import LoginForm from './components/LoginForm';
+import DosingForm from './components/DosingForm';
+import History from './components/History';
 
 function App() {
-  const [view, setView] = useState("form");
+  const [user, setUser] = useState(() => localStorage.getItem('user'));
+  const [view, setView] = useState('form');
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  if (!user) {
+    return <LoginForm onLogin={setUser} />;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      <div className="mb-6">
-        <button
-          onClick={() => setView("form")}
-          className={`px-4 py-2 mr-2 rounded ${
-            view === "form" ? "bg-blue-600 text-white" : "bg-white border"
-          }`}
-        >
-          Formularz
-        </button>
-        <button
-          onClick={() => setView("history")}
-          className={`px-4 py-2 rounded ${
-            view === "history" ? "bg-blue-600 text-white" : "bg-white border"
-          }`}
-        >
-          Historia
-        </button>
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <button
+            onClick={() => setView('form')}
+            className={`px-4 py-2 mr-2 rounded ${view === 'form' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            Formularz
+          </button>
+          <button
+            onClick={() => setView('history')}
+            className={`px-4 py-2 rounded ${view === 'history' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            Historia
+          </button>
+        </div>
+        <div>
+          <span className="mr-4 font-semibold">Zalogowano jako: {user}</span>
+          <button onClick={handleLogout} className="text-red-600 underline">
+            Wyloguj
+          </button>
+        </div>
       </div>
 
-      {view === "form" ? <DosingForm /> : <History />}
+      {view === 'form' ? <DosingForm /> : <History />}
     </div>
   );
 }

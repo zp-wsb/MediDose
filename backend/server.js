@@ -10,7 +10,7 @@ const PORT = 5000;
 const HISTORY_FILE = path.join(__dirname, 'history.json');
 let dosingHistory = [];
 
-// 🔁 Wczytaj historię z pliku przy starcie serwera
+// 🔁 Wczytaj historię
 try {
   const data = fs.readFileSync(HISTORY_FILE, 'utf8');
   dosingHistory = JSON.parse(data);
@@ -23,19 +23,17 @@ try {
 app.use(cors());
 app.use(express.json());
 
-// 🔧 Serwuj zbudowany frontend (PWA)
+// 🔧 Ścieżka do builda frontendu Reacta
 const buildPath = path.resolve(__dirname, '..', 'frontend', 'build');
 console.log("🔧 Ścieżka do builda:", buildPath);
 app.use(express.static(buildPath));
 
-// 📥 Oblicz dawkę
+// 📥 API: oblicz dawkę
 app.post('/api/dose', (req, res) => {
   const { age, weight, gender, medicine } = req.body;
-
   console.log("📥 Odebrano dane:", req.body);
 
   let dose = 0;
-
   switch (medicine) {
     case "Paracetamol":
       dose = weight * 10;
@@ -51,7 +49,6 @@ app.post('/api/dose', (req, res) => {
   }
 
   const finalDose = dose.toFixed(2);
-
   const entry = {
     timestamp: new Date().toISOString(),
     age,
@@ -62,23 +59,20 @@ app.post('/api/dose', (req, res) => {
   };
 
   dosingHistory.push(entry);
-  console.log("✅ Zapisano:", entry);
-
   fs.writeFile(HISTORY_FILE, JSON.stringify(dosingHistory, null, 2), err => {
     if (err) console.error("❌ Błąd zapisu historii:", err.message);
-    else console.log("💾 Historia zapisana do pliku.");
+    else console.log("💾 Historia zapisana.");
   });
 
   res.json({ dose: finalDose });
 });
 
-// 📤 Pobierz historię
+// 📤 API: historia
 app.get('/api/history', (req, res) => {
-  console.log("📤 Wysłano historię:", dosingHistory.length, "rekordów");
   res.json(dosingHistory);
 });
 
-// 📄 Eksportuj historię do PDF
+// 📄 API: eksport PDF
 app.get('/api/export', (req, res) => {
   const doc = new PDFDocument();
   const fontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
@@ -90,9 +84,7 @@ app.get('/api/export', (req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
 
   doc.pipe(res);
-
-  doc.fontSize(18).text('Historia dawkowania', { underline: true });
-  doc.moveDown();
+  doc.fontSize(18).text('Historia dawkowania', { underline: true }).moveDown();
 
   dosingHistory.forEach((entry, index) => {
     doc
@@ -107,12 +99,21 @@ app.get('/api/export', (req, res) => {
   doc.end();
 });
 
-// ⚙️ Obsługa SPA: tylko jeśli ścieżka NIE zaczyna się od /api
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
+// 🌐 Fallback: obsługa ścieżek frontendu Reacta (dla SPA)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    res.sendFile(path.join(buildPath, 'index.html'), err => {
+      if (err) {
+        console.error('❌ Błąd ładowania index.html:', err.message);
+        res.status(500).send('Błąd serwera');
+      }
+    });
+  } else {
+    next();
+  }
 });
 
-// 🚀 Start serwera
+// 🚀 Start
 app.listen(PORT, () => {
   console.log(`🚀 Serwer działa na http://localhost:${PORT}`);
 });
