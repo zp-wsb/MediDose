@@ -23,10 +23,12 @@ try {
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Serwer backend działa!');
-});
+// 🔧 Serwuj zbudowany frontend (PWA)
+const buildPath = path.resolve(__dirname, '..', 'frontend', 'build');
+console.log("🔧 Ścieżka do builda:", buildPath);
+app.use(express.static(buildPath));
 
+// 📥 Oblicz dawkę
 app.post('/api/dose', (req, res) => {
   const { age, weight, gender, medicine } = req.body;
 
@@ -62,7 +64,6 @@ app.post('/api/dose', (req, res) => {
   dosingHistory.push(entry);
   console.log("✅ Zapisano:", entry);
 
-  // 💾 Zapisz historię do pliku
   fs.writeFile(HISTORY_FILE, JSON.stringify(dosingHistory, null, 2), err => {
     if (err) console.error("❌ Błąd zapisu historii:", err.message);
     else console.log("💾 Historia zapisana do pliku.");
@@ -71,15 +72,15 @@ app.post('/api/dose', (req, res) => {
   res.json({ dose: finalDose });
 });
 
+// 📤 Pobierz historię
 app.get('/api/history', (req, res) => {
   console.log("📤 Wysłano historię:", dosingHistory.length, "rekordów");
   res.json(dosingHistory);
 });
 
-// 📄 Eksport do PDF z obsługą polskich znaków
+// 📄 Eksportuj historię do PDF
 app.get('/api/export', (req, res) => {
   const doc = new PDFDocument();
-
   const fontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
   doc.registerFont('DejaVu', fontPath);
   doc.font('DejaVu');
@@ -106,6 +107,12 @@ app.get('/api/export', (req, res) => {
   doc.end();
 });
 
+// ⚙️ Obsługa SPA: tylko jeśli ścieżka NIE zaczyna się od /api
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+// 🚀 Start serwera
 app.listen(PORT, () => {
   console.log(`🚀 Serwer działa na http://localhost:${PORT}`);
 });
