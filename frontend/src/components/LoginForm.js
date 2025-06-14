@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const LoginForm = ({ onLogin }) => {
   const [username, setUsername] = useState('');
@@ -7,12 +8,16 @@ const LoginForm = ({ onLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:5000/api/login', {
+        username,
+        password
+      });
 
-    // Na razie logika mockowana
-    if (username === 'admin' && password === '1234') {
-      localStorage.setItem('user', username);
-      onLogin(username);
-    } else {
+      localStorage.setItem('user', res.data.username);
+      localStorage.setItem('token', res.data.token);
+      onLogin(res.data.username);
+    } catch (err) {
       setError('Niepoprawny login lub hasło.');
     }
   };
@@ -38,10 +43,7 @@ const LoginForm = ({ onLogin }) => {
           required
         />
         {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
-        >
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700">
           Zaloguj
         </button>
       </form>

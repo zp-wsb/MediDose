@@ -2,36 +2,66 @@ const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 const PDFDocument = require('pdfkit');
 
 const app = express();
 const PORT = 5000;
+const SECRET_KEY = 'supersecret';
 
 const HISTORY_FILE = path.join(__dirname, 'history.json');
+const USERS_FILE = path.join(__dirname, 'users.json');
 let dosingHistory = [];
 
-// 🔁 Wczytaj historię
 try {
   const data = fs.readFileSync(HISTORY_FILE, 'utf8');
   dosingHistory = JSON.parse(data);
   console.log("📂 Historia wczytana z pliku.");
 } catch (err) {
-  console.warn("⚠️ Nie udało się wczytać historii. Tworzę pustą:", err.message);
+  console.warn("⚠️ Nie udało się wczytać historii:", err.message);
   dosingHistory = [];
 }
 
 app.use(cors());
 app.use(express.json());
 
+// 🔐 Middleware autoryzacji
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Brak tokenu' });
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Nieprawidłowy token' });
+    req.user = user;
+    next();
+  });
+}
+
 // 🔧 Ścieżka do builda frontendu Reacta
 const buildPath = path.resolve(__dirname, '..', 'frontend', 'build');
-console.log("🔧 Ścieżka do builda:", buildPath);
 app.use(express.static(buildPath));
 
-// 📥 API: oblicz dawkę
-app.post('/api/dose', (req, res) => {
+// 🔑 Logowanie i generowanie tokenu
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+    const user = users.find(u => u.username === username && u.password === password);
+    if (!user) return res.status(401).json({ error: 'Nieprawidłowy login lub hasło' });
+
+    const token = jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+    res.json({ token, username: user.username });
+  } catch (err) {
+    console.error("❌ Błąd odczytu users.json:", err.message);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+});
+
+// 📥 Oblicz dawkę (🔒 chronione)
+app.post('/api/dose', authenticateToken, (req, res) => {
   const { age, weight, gender, medicine } = req.body;
-  console.log("📥 Odebrano dane:", req.body);
 
   let dose = 0;
   switch (medicine) {
@@ -42,7 +72,7 @@ app.post('/api/dose', (req, res) => {
       dose = age < 12 ? weight * 5 : weight * 7;
       break;
     case "Amoksycylina":
-      dose = gender === "Kobieta" || gender === "female" ? weight * 6 : weight * 8;
+      dose = gender === "Kobieta" ? weight * 6 : weight * 8;
       break;
     default:
       return res.status(400).json({ error: "Nieznany lek" });
@@ -61,19 +91,18 @@ app.post('/api/dose', (req, res) => {
   dosingHistory.push(entry);
   fs.writeFile(HISTORY_FILE, JSON.stringify(dosingHistory, null, 2), err => {
     if (err) console.error("❌ Błąd zapisu historii:", err.message);
-    else console.log("💾 Historia zapisana.");
   });
 
   res.json({ dose: finalDose });
 });
 
-// 📤 API: historia
-app.get('/api/history', (req, res) => {
+// 📤 Historia (🔒 chronione)
+app.get('/api/history', authenticateToken, (req, res) => {
   res.json(dosingHistory);
 });
 
-// 📄 API: eksport PDF
-app.get('/api/export', (req, res) => {
+// 📄 Eksport do PDF (🔒 chronione)
+app.get('/api/export', authenticateToken, (req, res) => {
   const doc = new PDFDocument();
   const fontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
   doc.registerFont('DejaVu', fontPath);
@@ -99,7 +128,7 @@ app.get('/api/export', (req, res) => {
   doc.end();
 });
 
-// 🌐 Fallback: obsługa ścieżek frontendu Reacta (dla SPA)
+// 🌐 Fallback SPA
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api')) {
     res.sendFile(path.join(buildPath, 'index.html'), err => {

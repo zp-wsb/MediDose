@@ -5,7 +5,12 @@ export default function History() {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/history")
+    const token = localStorage.getItem('token');
+    axios.get("http://localhost:5000/api/history", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then(response => {
         setHistory(response.data);
       })
@@ -14,12 +19,14 @@ export default function History() {
       });
   }, []);
 
+  const pdfUrl = `http://localhost:5000/api/export?token=${localStorage.getItem('token')}`;
+
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md">
       <h2 className="text-xl font-bold mb-4">Historia dawkowania</h2>
 
       <a
-        href="http://localhost:5000/api/export"
+        href={pdfUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="bg-green-600 text-white px-4 py-2 rounded mb-4 inline-block"

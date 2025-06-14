@@ -9,6 +9,7 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token'); // 🧹 usuń token JWT
     setUser(null);
   };
 

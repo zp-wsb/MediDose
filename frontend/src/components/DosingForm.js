@@ -11,11 +11,16 @@ export default function DosingForm() {
 
   const handleSubmit = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.post("http://localhost:5000/api/dose", {
         age: parseInt(age),
         weight: parseFloat(weight),
         gender,
         medicine
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       setDose(response.data.dose);
       setError(null);
@@ -51,13 +56,8 @@ export default function DosingForm() {
 
       <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Oblicz</button>
 
-      {dose && (
-        <p className="mt-4 text-green-600 font-semibold text-lg">Zalecana dawka: {dose} mg</p>
-      )}
-
-      {error && (
-        <p className="mt-4 text-red-600 font-semibold">{error}</p>
-      )}
+      {dose && <p className="mt-4 text-green-600 font-semibold text-lg">Zalecana dawka: {dose} mg</p>}
+      {error && <p className="mt-4 text-red-600 font-semibold">{error}</p>}
     </div>
   );
 }
