@@ -142,5 +142,29 @@
     "gender": "male",
     "medicine": "Amoksycylina",
     "dose": "624.00"
+  },
+  {
+    "timestamp": "2025-06-14T21:09:41.173Z",
+    "age": 12,
+    "weight": 30,
+    "gender": "female",
+    "medicine": "Paracetamol",
+    "dose": "300.00"
+  },
+  {
+    "timestamp": "2025-06-14T21:09:43.934Z",
+    "age": 12,
+    "weight": 30,
+    "gender": "female",
+    "medicine": "Ibuprofen",
+    "dose": "210.00"
+  },
+  {
+    "timestamp": "2025-06-14T21:09:46.384Z",
+    "age": 12,
+    "weight": 30,
+    "gender": "female",
+    "medicine": "Amoksycylina",
+    "dose": "240.00"
   }
 ]
