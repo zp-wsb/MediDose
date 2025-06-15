@@ -1,71 +1,84 @@
 # 💊 MediDose – Aplikacja do dawkowania leków
 
-**MediDose** to responsywna aplikacja webowa typu PWA, która umożliwia obliczanie zaleceń dawkowania leków na podstawie wieku, wagi, płci oraz wybranego leku. Dodatkowo zapisuje historię obliczeń i umożliwia jej eksport do pliku PDF.
+MediDose to responsywna aplikacja webowa typu **PWA**, która umożliwia:
+- obliczanie zaleceń dawkowania leków (na podstawie wieku, wagi, płci),
+- rejestrację i logowanie użytkowników,
+- zapisywanie historii obliczeń dla konkretnego konta,
+- eksport historii do pliku PDF,
+- działanie offline dzięki rejestracji Service Workera.
 
 ---
 
 ## 📦 Technologia
 
-- **Frontend**: React + TailwindCSS
-- **Backend**: Node.js (Express)
-- **Baza danych**: zapis do pliku `history.json` (symulacja trwałego przechowywania)
-- **Eksport PDF**: PDFKit + czcionka DejaVuSans do obsługi polskich znaków
+- **Frontend**: React + Tailwind CSS
+- **Backend**: Node.js + Express
+- **Baza danych**: zapis do pliku `history.json` i `users.json`
+- **Eksport PDF**: PDFKit + czcionka DejaVuSans (obsługa polskich znaków)
+- **Autoryzacja**: JWT (tokeny logowania)
+- **PWA**: manifest + Service Worker
 
 ---
 
 ## ⚙️ Jak uruchomić
 
 ### 1. Backend
-
 ```bash
 cd MediDose/backend
 npm install
 node server.js
 ```
-
-Serwer będzie działał na `http://localhost:5000`
+Serwer działa pod adresem: `http://localhost:5000`
 
 ### 2. Frontend
-
 ```bash
 cd MediDose/frontend
 npm install
 npm start
 ```
+Aplikacja frontendowa dostępna pod: `http://localhost:3000`
 
-Aplikacja frontendowa będzie widoczna pod `http://localhost:3000`
+Jeśli budujesz produkcję:
+```bash
+npm run build
+```
 
 ---
 
 ## ✅ Funkcjonalności
 
-- [x] Formularz dawkowania leków (Paracetamol, Ibuprofen, Amoksycylina)
-- [x] Uwzględnienie wieku, wagi i płci przy obliczeniach
-- [x] Historia dawkowania z trwałym zapisem do pliku `history.json`
-- [x] Eksport historii do pliku PDF (obsługa polskich znaków)
-- [x] Responsywny wygląd (Tailwind CSS)
-- [x] Repozytorium z historią commitów
+- 🔐 Logowanie i rejestracja użytkowników z tokenem JWT
+- 💊 Formularz dawkowania leków (Paracetamol, Ibuprofen, Amoksycylina)
+- 📈 Historia obliczeń przypisana do konta użytkownika
+- 📄 Eksport historii do PDF (indywidualnej)
+- 💾 Trwały zapis danych do `history.json` i `users.json`
+- 📱 Responsywny wygląd (Tailwind CSS)
+- 📥 Obsługa polskich znaków w PDF
+- 🧾 Możliwość uruchomienia jako PWA (Service Worker + manifest)
 
 ---
 
 ## 🧪 Trwałość danych
 
-Wszystkie obliczenia są zapisywane do pliku `backend/history.json`, co pozwala na zachowanie historii nawet po ponownym uruchomieniu serwera.
+Wszystkie obliczenia są zapisywane lokalnie do pliku `backend/history.json`, a konta użytkowników do `backend/users.json`. Aplikacja nie wymaga zewnętrznej bazy danych.
 
 ---
 
 ## 📄 Eksport PDF
 
-Historia dawkowania może być pobrana w postaci pliku PDF dzięki przyciskowi **"Eksportuj do PDF"**. Plik zawiera wszystkie dane i poprawnie obsługuje polskie znaki (czcionka DejaVuSans).
+Historia dawkowania może zostać pobrana jako plik PDF z poziomu aplikacji. PDF jest generowany dynamicznie z historii danego użytkownika i zawiera polskie znaki (czcionka DejaVuSans).
 
 ---
 
 ## 📌 Planowane kolejne kroki
 
-- [ ] Dodanie pliku `manifest.json` i rejestracja Service Workera (pełne PWA)
-- [ ] Opcjonalne API publiczne (np. nazwy leków, pogoda)
-- [ ] Możliwość filtrowania historii
-- [ ] Instrukcja instalacji jako aplikacja mobilna
+- [x] Rejestracja i logowanie użytkownika
+- [x] Historia przypisana do konta
+- [x] Eksport PDF z filtrowaniem po użytkowniku
+- [x] Rejestracja Service Workera (tryb PWA)
+- [ ] Filtry historii po lekach lub dacie
+- [ ] Własne API z listą leków lub interakcjami
+- [ ] Tryb offline i instalacja jako aplikacja mobilna
 
 ---
 
@@ -75,11 +88,21 @@ Historia dawkowania może być pobrana w postaci pliku PDF dzięki przyciskowi *
 MediDose/
 ├── backend/
 │   ├── server.js
+│   ├── users.json
 │   ├── history.json
-│   └── package.json
+│   └── fonts/DejaVuSans.ttf
+│
 └── frontend/
-    ├── src/
     ├── public/
+    │   ├── manifest.json
+    │   └── service-worker.js
+    ├── src/
+    │   ├── components/
+    │   │   ├── LoginForm.js
+    │   │   ├── RegisterForm.js
+    │   │   ├── DosingForm.js
+    │   │   └── History.js
+    │   └── App.js
     └── package.json
 ```
 
@@ -87,5 +110,5 @@ MediDose/
 
 ## 🧑‍💻 Autor
 
-Zbigniew Plocharski  
+**Zbigniew Plocharski**  
 Repozytorium: [https://github.com/zp-wsb/MediDose](https://github.com/zp-wsb/MediDose)
