@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const LoginForm = ({ onLogin }) => {
+const LoginForm = ({ onLogin, onSwitchToRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -43,9 +43,24 @@ const LoginForm = ({ onLogin }) => {
           required
         />
         {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700">
+
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
+        >
           Zaloguj
         </button>
+
+        <p className="text-center text-sm mt-4">
+          Nie masz konta?{' '}
+          <button
+            type="button"
+            onClick={onSwitchToRegister}
+            className="text-blue-600 underline"
+          >
+            Zarejestruj się
+          </button>
+        </p>
       </form>
     </div>
   );

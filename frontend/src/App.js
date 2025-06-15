@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
 import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
 import DosingForm from './components/DosingForm';
 import History from './components/History';
 
 function App() {
   const [user, setUser] = useState(() => localStorage.getItem('user'));
   const [view, setView] = useState('form');
+  const [authMode, setAuthMode] = useState('login'); // 'login' lub 'register'
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    localStorage.removeItem('token'); // 🧹 usuń token JWT
+    localStorage.removeItem('token');
     setUser(null);
+    setAuthMode('login'); // wróć do ekranu logowania
   };
 
   if (!user) {
-    return <LoginForm onLogin={setUser} />;
+    return authMode === 'login' ? (
+      <LoginForm
+        onLogin={setUser}
+        onSwitchToRegister={() => setAuthMode('register')}
+      />
+    ) : (
+      <RegisterForm onSwitchToLogin={() => setAuthMode('login')} />
+    );
   }
 
   return (

@@ -59,6 +59,32 @@ app.post('/api/login', (req, res) => {
   }
 });
 
+// 🆕 Rejestracja nowego użytkownika
+app.post('/api/register', (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Brak loginu lub hasła' });
+  }
+
+  try {
+    const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+    const exists = users.some(u => u.username === username);
+    if (exists) {
+      return res.status(409).json({ error: 'Użytkownik już istnieje' });
+    }
+
+    const newUser = { username, password };
+    users.push(newUser);
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    console.log(`👤 Dodano nowego użytkownika: ${username}`);
+    res.status(201).json({ message: 'Użytkownik zarejestrowany' });
+  } catch (err) {
+    console.error("❌ Błąd zapisu użytkownika:", err.message);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+});
+
 // 📥 Oblicz dawkę (🔒 chronione)
 app.post('/api/dose', authenticateToken, (req, res) => {
   const { age, weight, gender, medicine } = req.body;
@@ -82,7 +108,7 @@ app.post('/api/dose', authenticateToken, (req, res) => {
   const finalDose = dose.toFixed(2);
   const entry = {
     timestamp: new Date().toISOString(),
-    username, // 💾 zapisz kto wykonał obliczenie
+    username,
     age,
     weight,
     gender,
