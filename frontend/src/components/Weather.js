@@ -7,6 +7,7 @@ export default function Weather() {
   const [city, setCity] = useState("Warszawa");
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState(null);
+  const [advice, setAdvice] = useState("");
 
   const fetchWeather = async () => {
     try {
@@ -15,10 +16,29 @@ export default function Weather() {
       );
       setWeather(res.data);
       setError(null);
+      generateAdvice(res.data);
     } catch (err) {
       setWeather(null);
+      setAdvice("");
       setError("Nie udało się pobrać danych pogodowych.");
       console.error(err);
+    }
+  };
+
+  const generateAdvice = (data) => {
+    const temp = data.main.temp;
+    const condition = data.weather[0].main.toLowerCase();
+
+    if (condition.includes("rain")) {
+      setAdvice("🌂 Możliwy deszcz – weź parasol.");
+    } else if (temp >= 28) {
+      setAdvice("🌡 Uważaj na upał!");
+    } else if (temp >= 24) {
+      setAdvice("💧 Zadbaj o nawodnienie.");
+    } else if (temp < 10) {
+      setAdvice("🧥 Chłodno – ubierz się ciepło.");
+    } else {
+      setAdvice("✅ Pogoda wydaje się być w porządku.");
     }
   };
 
@@ -51,6 +71,7 @@ export default function Weather() {
           <p>☁️ Warunki: {weather.weather[0].description}</p>
           <p>💧 Wilgotność: {weather.main.humidity}%</p>
           <p>💨 Wiatr: {weather.wind.speed} m/s</p>
+          <p className="mt-3 font-medium text-blue-700">{advice}</p>
         </div>
       )}
     </div>

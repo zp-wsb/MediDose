@@ -1,22 +1,22 @@
 # 💊 MediDose – Aplikacja do dawkowania leków
 
-MediDose to responsywna aplikacja webowa typu **PWA**, która umożliwia:
-- obliczanie zaleceń dawkowania leków (na podstawie wieku, wagi, płci),
-- rejestrację i logowanie użytkowników,
-- zapisywanie historii obliczeń dla konkretnego konta,
+MediDose to responsywna aplikacja webowa typu PWA, która umożliwia:
+- obliczanie zaleceń dawkowania leków na podstawie wieku, wagi, płci i wybranego leku,
+- zapisywanie historii obliczeń przypisanej do zalogowanego użytkownika,
 - eksport historii do pliku PDF,
-- działanie offline dzięki rejestracji Service Workera.
+- sprawdzenie aktualnej pogody w swoim mieście (integracja z publicznym API OpenWeather).
 
 ---
 
 ## 📦 Technologia
 
 - **Frontend**: React + Tailwind CSS
-- **Backend**: Node.js + Express
-- **Baza danych**: zapis do pliku `history.json` i `users.json`
+- **Backend**: Node.js (Express)
+- **Autoryzacja**: JWT (JSON Web Token)
+- **Baza danych**: `users.json` (użytkownicy), `history.json` (historia dawkowania)
 - **Eksport PDF**: PDFKit + czcionka DejaVuSans (obsługa polskich znaków)
-- **Autoryzacja**: JWT (tokeny logowania)
-- **PWA**: manifest + Service Worker
+- **Pogoda**: OpenWeatherMap API
+- **PWA**: Service Worker + `manifest.json`
 
 ---
 
@@ -28,57 +28,67 @@ cd MediDose/backend
 npm install
 node server.js
 ```
-Serwer działa pod adresem: `http://localhost:5000`
+Serwer backend działa pod adresem: http://localhost:5000
 
 ### 2. Frontend
 ```bash
 cd MediDose/frontend
 npm install
-npm start
-```
-Aplikacja frontendowa dostępna pod: `http://localhost:3000`
-
-Jeśli budujesz produkcję:
-```bash
 npm run build
 ```
+Build zostanie automatycznie obsłużony przez backend (statyczna obsługa `/build`)
 
 ---
 
 ## ✅ Funkcjonalności
 
-- 🔐 Logowanie i rejestracja użytkowników z tokenem JWT
-- 💊 Formularz dawkowania leków (Paracetamol, Ibuprofen, Amoksycylina)
-- 📈 Historia obliczeń przypisana do konta użytkownika
-- 📄 Eksport historii do PDF (indywidualnej)
-- 💾 Trwały zapis danych do `history.json` i `users.json`
-- 📱 Responsywny wygląd (Tailwind CSS)
-- 📥 Obsługa polskich znaków w PDF
-- 🧾 Możliwość uruchomienia jako PWA (Service Worker + manifest)
+- [x] Formularz dawkowania leków (Paracetamol, Ibuprofen, Amoksycylina)
+- [x] Uwzględnienie wieku, wagi i płci
+- [x] Historia dawkowania z przypisaniem do użytkownika
+- [x] Eksport PDF z filtracją historii po użytkowniku
+- [x] Rejestracja i logowanie z tokenem JWT
+- [x] Pogoda w mieście użytkownika – integracja z OpenWeatherMap API
+- [x] Responsywny wygląd (Tailwind CSS)
+- [x] Obsługa PWA (Service Worker + `manifest.json`)
+
+---
+
+## 🔐 Bezpieczeństwo
+
+- Logowanie przez `/api/login` – generowanie tokenu JWT
+- Token jest przesyłany w nagłówku `Authorization: Bearer <token>`
+- Endpointy `/api/dose`, `/api/history`, `/api/export` są chronione
+- Historia jest filtrowana po zalogowanym użytkowniku (każdy widzi tylko swoje dane)
+
+---
+
+## 🌦 Pogoda
+
+Użytkownik może sprawdzić pogodę w swoim mieście (np. Warszawa, Gdańsk) i otrzymać:
+- temperaturę,
+- opis warunków (np. bezchmurnie),
+- wilgotność i prędkość wiatru,
+- automatyczną poradę zdrowotną, np.:
+  - `🌡 Uważaj na upał!`
+  - `🧥 Chłodno – ubierz się ciepło.`
+  - `🌂 Możliwy deszcz – weź parasol.`
 
 ---
 
 ## 🧪 Trwałość danych
 
-Wszystkie obliczenia są zapisywane lokalnie do pliku `backend/history.json`, a konta użytkowników do `backend/users.json`. Aplikacja nie wymaga zewnętrznej bazy danych.
+- Historia dawkowania zapisywana w `backend/history.json`
+- Użytkownicy zapisani w `backend/users.json`
+- Dane są odporne na restart serwera
 
 ---
 
-## 📄 Eksport PDF
+## 📄 Eksport do PDF
 
-Historia dawkowania może zostać pobrana jako plik PDF z poziomu aplikacji. PDF jest generowany dynamicznie z historii danego użytkownika i zawiera polskie znaki (czcionka DejaVuSans).
-
----
-
-## 📌 Planowane kolejne kroki
-
-- [x] Rejestracja i logowanie użytkownika
-- [x] Historia przypisana do konta
-- [x] Eksport PDF z filtrowaniem po użytkowniku
-- [x] Rejestracja Service Workera (tryb PWA)
-- [ ] Filtry historii po lekach lub dacie
-- [ ] Własne API z listą leków lub interakcjami
-- [ ] Tryb offline i instalacja jako aplikacja mobilna
+- Plik generowany przez PDFKit
+- Filtracja historii po użytkowniku
+- Obsługa polskich znaków (czcionka `DejaVuSans`)
+- Nazwa pliku: `dosing-history-[username]-[timestamp].pdf`
 
 ---
 
@@ -88,27 +98,43 @@ Historia dawkowania może zostać pobrana jako plik PDF z poziomu aplikacji. PDF
 MediDose/
 ├── backend/
 │   ├── server.js
-│   ├── users.json
 │   ├── history.json
-│   └── fonts/DejaVuSans.ttf
-│
+│   ├── users.json
+│   ├── fonts/DejaVuSans.ttf
+│   └── package.json
 └── frontend/
     ├── public/
     │   ├── manifest.json
+    │   ├── favicon.png
     │   └── service-worker.js
     ├── src/
     │   ├── components/
+    │   │   ├── DosingForm.js
+    │   │   ├── History.js
     │   │   ├── LoginForm.js
     │   │   ├── RegisterForm.js
-    │   │   ├── DosingForm.js
-    │   │   └── History.js
-    │   └── App.js
+    │   │   └── Weather.js
+    │   ├── App.js
+    │   └── index.js
     └── package.json
 ```
 
 ---
 
-## 🧑‍💻 Autor
+## 📌 Planowane kolejne kroki
+
+- [x] Rejestracja i logowanie użytkownika
+- [x] Historia przypisana do konta
+- [x] Eksport PDF z filtrowaniem po użytkowniku
+- [x] Rejestracja Service Workera (tryb PWA)
+- [x] Pogoda z publicznego API
+- [ ] Filtrowanie historii po lekach lub dacie
+- [ ] Tryb offline + instalacja jako aplikacja mobilna
+- [ ] Własne API z interakcją (np. baza leków, ostrzeżenia)
+
+---
+
+## 👨‍💻 Autor
 
 **Zbigniew Plocharski**  
-Repozytorium: [https://github.com/zp-wsb/MediDose](https://github.com/zp-wsb/MediDose)
+📁 Repozytorium: [github.com/zp-wsb/MediDose](https://github.com/zp-wsb/MediDose)
