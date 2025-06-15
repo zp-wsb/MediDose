@@ -62,6 +62,7 @@ app.post('/api/login', (req, res) => {
 // 📥 Oblicz dawkę (🔒 chronione)
 app.post('/api/dose', authenticateToken, (req, res) => {
   const { age, weight, gender, medicine } = req.body;
+  const username = req.user.username;
 
   let dose = 0;
   switch (medicine) {
@@ -81,6 +82,7 @@ app.post('/api/dose', authenticateToken, (req, res) => {
   const finalDose = dose.toFixed(2);
   const entry = {
     timestamp: new Date().toISOString(),
+    username, // 💾 zapisz kto wykonał obliczenie
     age,
     weight,
     gender,
@@ -96,26 +98,31 @@ app.post('/api/dose', authenticateToken, (req, res) => {
   res.json({ dose: finalDose });
 });
 
-// 📤 Historia (🔒 chronione)
+// 📤 Historia użytkownika (🔒 chronione)
 app.get('/api/history', authenticateToken, (req, res) => {
-  res.json(dosingHistory);
+  const username = req.user.username;
+  const userHistory = dosingHistory.filter(entry => entry.username === username);
+  res.json(userHistory);
 });
 
 // 📄 Eksport do PDF (🔒 chronione)
 app.get('/api/export', authenticateToken, (req, res) => {
+  const username = req.user.username;
+  const userHistory = dosingHistory.filter(entry => entry.username === username);
+
   const doc = new PDFDocument();
   const fontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
   doc.registerFont('DejaVu', fontPath);
   doc.font('DejaVu');
 
-  const filename = `dosing-history-${Date.now()}.pdf`;
+  const filename = `dosing-history-${username}-${Date.now()}.pdf`;
   res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
   res.setHeader('Content-Type', 'application/pdf');
 
   doc.pipe(res);
-  doc.fontSize(18).text('Historia dawkowania', { underline: true }).moveDown();
+  doc.fontSize(18).text(`Historia dawkowania (${username})`, { underline: true }).moveDown();
 
-  dosingHistory.forEach((entry, index) => {
+  userHistory.forEach((entry, index) => {
     doc
       .fontSize(12)
       .text(`${index + 1}. ${entry.timestamp}`)
