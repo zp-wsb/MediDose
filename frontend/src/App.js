@@ -3,6 +3,7 @@ import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import DosingForm from './components/DosingForm';
 import History from './components/History';
+import Weather from './components/Weather';
 
 function App() {
   const [user, setUser] = useState(() => localStorage.getItem('user'));
@@ -13,7 +14,7 @@ function App() {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     setUser(null);
-    setAuthMode('login'); // wróć do ekranu logowania
+    setAuthMode('login');
   };
 
   if (!user) {
@@ -30,10 +31,10 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="flex justify-between items-center mb-6">
-        <div>
+        <div className="space-x-2">
           <button
             onClick={() => setView('form')}
-            className={`px-4 py-2 mr-2 rounded ${view === 'form' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${view === 'form' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
           >
             Formularz
           </button>
@@ -42,6 +43,12 @@ function App() {
             className={`px-4 py-2 rounded ${view === 'history' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
           >
             Historia
+          </button>
+          <button
+            onClick={() => setView('weather')}
+            className={`px-4 py-2 rounded ${view === 'weather' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            Pogoda
           </button>
         </div>
         <div>
@@ -52,7 +59,9 @@ function App() {
         </div>
       </div>
 
-      {view === 'form' ? <DosingForm /> : <History />}
+      {view === 'form' && <DosingForm />}
+      {view === 'history' && <History />}
+      {view === 'weather' && <Weather />}
     </div>
   );
 }
